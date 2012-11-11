@@ -1,9 +1,9 @@
-package com.github.mkroli.nsg.ast.impl
+package com.github.mkroli.ast.impl
 
 import scala.math.abs
 
-import com.github.mkroli.nsg.ast.AbstractSyntaxTree
-import com.github.mkroli.nsg.ast.AbstractSyntaxTree1
+import com.github.mkroli.ast.AbstractSyntaxTree
+import com.github.mkroli.ast.AbstractSyntaxTree1
 
 case class Abs(a: AbstractSyntaxTree) extends AbstractSyntaxTree1 {
   def apply(p: (Seq[Double], Int)) = abs(a(p))

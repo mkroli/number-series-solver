@@ -1,6 +1,6 @@
-package com.github.mkroli.nsg.ast.impl
+package com.github.mkroli.ast.impl
 
-import com.github.mkroli.nsg.ast.AbstractSyntaxTree0
+import com.github.mkroli.ast.AbstractSyntaxTree0
 
 case class PreviousRecord(offset: Int) extends AbstractSyntaxTree0 {
   require(offset > 0)

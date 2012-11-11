@@ -1,7 +1,7 @@
-package com.github.mkroli.nsg.ast.impl
+package com.github.mkroli.ast.impl
 
-import com.github.mkroli.nsg.ast.AbstractSyntaxTree
-import com.github.mkroli.nsg.ast.AbstractSyntaxTree2
+import com.github.mkroli.ast.AbstractSyntaxTree
+import com.github.mkroli.ast.AbstractSyntaxTree2
 
 case class Division(a: AbstractSyntaxTree, b: AbstractSyntaxTree) extends AbstractSyntaxTree2 {
   require(b != 0)

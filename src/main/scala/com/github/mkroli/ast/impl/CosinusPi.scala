@@ -1,10 +1,10 @@
-package com.github.mkroli.nsg.ast.impl
+package com.github.mkroli.ast.impl
 
 import scala.math.Pi
 import scala.math.cos
 
-import com.github.mkroli.nsg.ast.AbstractSyntaxTree
-import com.github.mkroli.nsg.ast.AbstractSyntaxTree1
+import com.github.mkroli.ast.AbstractSyntaxTree
+import com.github.mkroli.ast.AbstractSyntaxTree1
 
 case class CosinusPi(a: AbstractSyntaxTree) extends AbstractSyntaxTree1 {
   def apply(p: (Seq[Double], Int)) = cos(a(p) * Pi)

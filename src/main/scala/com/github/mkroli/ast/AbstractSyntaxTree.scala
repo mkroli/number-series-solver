@@ -1,4 +1,4 @@
-package com.github.mkroli.nsg.ast
+package com.github.mkroli.ast
 
 trait AbstractSyntaxTree extends Function[(Seq[Double], Int), Double] {
   def short: AbstractSyntaxTree = this

@@ -1,6 +1,6 @@
-package com.github.mkroli.nsg.ast.impl
+package com.github.mkroli.ast.impl
 
-import com.github.mkroli.nsg.ast.AbstractSyntaxTree0
+import com.github.mkroli.ast.AbstractSyntaxTree0
 
 case class Constant(a: Double) extends AbstractSyntaxTree0 {
   def apply(p: (Seq[Double], Int)) = a
