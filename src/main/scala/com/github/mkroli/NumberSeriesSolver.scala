@@ -154,19 +154,18 @@ object NumberSeriesSolver extends App {
     evolve(numberSeries,
       generations,
       randomStream(numberSeries).take(generationSize),
-      generationsAfterSolved).take(10).distinct
+      generationsAfterSolved).head
   }
 
   if (args.isEmpty) {
     println("syntax: NumberSeriesSolver <n1> [<n2>, ...]")
   } else {
     val numberSeries = args.toSeq.map(_.toInt).map(_.toDouble)
-    evolve(numberSeries, generations).foreach { a =>
-      println("%.2f\t%d\t%.2f\t%s".format(
-        diff(numberSeries)(a),
-        a.complexity,
-        a(numberSeries, numberSeries.size),
-        a))
-    }
+    val algorithm = evolve(numberSeries, generations)
+    println("%.2f\t%d\t%.2f\t%s".format(
+      diff(numberSeries)(algorithm),
+      algorithm.complexity,
+      algorithm(numberSeries, numberSeries.size),
+      algorithm))
   }
 }
