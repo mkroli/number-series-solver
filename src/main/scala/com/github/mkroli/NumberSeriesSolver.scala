@@ -33,37 +33,35 @@ import com.github.mkroli.ast.impl.Multiplication
 import com.github.mkroli.ast.impl.PreviousRecord
 import com.github.mkroli.ast.impl.Subtraction
 
-object NumberSeriesSolver extends App {
-  val generations = 10000
-  val generationSize = 100
-  val eliteRatio = .01
-  val crossoverRatio = .2
-  val mutantsRatio = .2
-
+class NumberSeriesSolver(generations: Int = 10000,
+  generationSize: Int = 100,
+  eliteRatio: Double = 0.01,
+  crossoverRatio: Double = 0.2,
+  mutantsRatio: Double = 0.2) {
   implicit val r = Random
 
-  def diff(s: Seq[Double])(a: AbstractSyntaxTree): Double = {
-    def diffList(s: Seq[Double], a: AbstractSyntaxTree) = {
-      def distance(a: Double, b: Double) = abs(a - b)
+  def evolve(numberSeries: Seq[Double], minDiff: Double = 0.0, generationsAfterSolved: Int = 100) = {
+    def diff(s: Seq[Double])(a: AbstractSyntaxTree): Double = {
+      def diffList(s: Seq[Double], a: AbstractSyntaxTree) = {
+        def distance(a: Double, b: Double) = abs(a - b)
 
-      (0 until s.size).map { i =>
-        try {
-          distance(s(i), a(s, i))
-        } catch {
-          case t =>
-            if (i < 2) 0.0
-            else (i.toDouble - 1.0)
+        (0 until s.size).map { i =>
+          try {
+            distance(s(i), a(s, i))
+          } catch {
+            case t =>
+              if (i < 2) 0.0
+              else (i.toDouble - 1.0)
+          }
         }
       }
+
+      def diffFromList(dl: Seq[Double]): Double =
+        if (dl.isEmpty) Double.NaN else dl.sum / dl.size
+
+      diffFromList(diffList(s, a))
     }
 
-    def diffFromList(dl: Seq[Double]): Double =
-      if (dl.isEmpty) Double.NaN else dl.sum / dl.size
-
-    diffFromList(diffList(s, a))
-  }
-
-  def evolve(numberSeries: Seq[Double], generations: Int, minDiff: Double = 0.0, generationsAfterSolved: Int = 100) = {
     def randomFunction(s: Seq[Double], depth: Int = 0)(implicit r: Random): AbstractSyntaxTree = {
       def randomFunc[T](l: List[T])(implicit r: Random): T = {
         val rand = r.nextDouble * l.size
@@ -166,19 +164,25 @@ object NumberSeriesSolver extends App {
       }
     }
 
-    evolve(numberSeries,
+    val algorithm = evolve(numberSeries,
       generations,
       randomStream(numberSeries).take(generationSize),
       generationsAfterSolved).head
-  }
+    val d = diff(numberSeries)(algorithm)
 
+    (algorithm, d)
+  }
+}
+
+object NumberSeriesSolverApp extends App {
   if (args.isEmpty) {
     println("syntax: NumberSeriesSolver <n1> [<n2>, ...]")
   } else {
+    val solver = new NumberSeriesSolver
     val numberSeries = args.toSeq.map(_.toInt).map(_.toDouble)
-    val algorithm = evolve(numberSeries, generations)
+    val (algorithm, diff) = solver.evolve(numberSeries)
     println("%.2f\t%d\t%.2f\t%s".format(
-      diff(numberSeries)(algorithm),
+      diff,
       algorithm.complexity,
       algorithm(numberSeries, numberSeries.size),
       algorithm))
