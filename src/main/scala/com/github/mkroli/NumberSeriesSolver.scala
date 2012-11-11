@@ -173,18 +173,3 @@ class NumberSeriesSolver(generations: Int = 10000,
     (algorithm, d)
   }
 }
-
-object NumberSeriesSolverApp extends App {
-  if (args.isEmpty) {
-    println("syntax: NumberSeriesSolver <n1> [<n2>, ...]")
-  } else {
-    val solver = new NumberSeriesSolver
-    val numberSeries = args.toSeq.map(_.toInt).map(_.toDouble)
-    val (algorithm, diff) = solver.evolve(numberSeries)
-    println("%.2f\t%d\t%.2f\t%s".format(
-      diff,
-      algorithm.complexity,
-      algorithm(numberSeries, numberSeries.size),
-      algorithm))
-  }
-}
