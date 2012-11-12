@@ -17,10 +17,10 @@ package com.github.mkroli
 
 import scopt.immutable.OptionParser
 
-case class Config(numberSeries: List[Double] = Nil,
-  verbose: Boolean = false)
-
 object NumberSeriesSolverApp extends App {
+  case class Config(numberSeries: List[Double] = Nil,
+    verbose: Boolean = false)
+
   val parser = new OptionParser[Config]("number-series-solver", "0.1") {
     def options = Seq(
       help("h", "help", "Display help message"),
