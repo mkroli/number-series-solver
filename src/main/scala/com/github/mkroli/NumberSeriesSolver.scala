@@ -20,7 +20,6 @@ import scala.collection.immutable.Stream.consWrapper
 import scala.math.abs
 import scala.math.pow
 import scala.util.Random
-
 import com.github.mkroli.ast.AbstractSyntaxTree
 import com.github.mkroli.ast.impl.Abs
 import com.github.mkroli.ast.impl.Addition
@@ -32,12 +31,13 @@ import com.github.mkroli.ast.impl.Index
 import com.github.mkroli.ast.impl.Multiplication
 import com.github.mkroli.ast.impl.PreviousRecord
 import com.github.mkroli.ast.impl.Subtraction
+import com.github.mkroli.ast.impl.Square
 
 class NumberSeriesSolver(generations: Int = 10000,
   generationSize: Int = 100,
   eliteRatio: Double = 0.01,
-  crossoverRatio: Double = 0.2,
-  mutantsRatio: Double = 0.2) {
+  crossoverRatio: Double = 0.16,
+  mutantsRatio: Double = 0.16) {
   implicit val r = Random
 
   def evolve(numberSeries: Seq[Double], minDiff: Double = 0.0, generationsAfterSolved: Int = 100) = {
@@ -75,12 +75,13 @@ class NumberSeriesSolver(generations: Int = 10000,
 
       lazy val ra = randomFunction(s, depth + 1)
       lazy val rb = randomFunction(s, depth + 1)
-      lazy val rsi = r.nextInt(3) + 1
+      lazy val rsi = r.nextInt(2) + 1
       lazy val rbi = r.nextInt(10).toDouble
       val funcSet = if (depth < 6) {
         (() => Addition(ra, rb)) ::
           (() => Subtraction(ra, rb)) ::
           (() => Multiplication(ra, rb)) ::
+          (() => Square(ra)) ::
           (() => Division(ra, rb)) ::
           (() => CosinusPi(ra)) ::
           (() => Abs(ra)) ::
