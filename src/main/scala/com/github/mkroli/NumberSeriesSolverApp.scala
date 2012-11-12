@@ -35,10 +35,16 @@ object NumberSeriesSolverApp extends App {
   parser.parse(args, Config()).map { c =>
     val solver = new NumberSeriesSolver(verbose = c.verbose)
     val (algorithm, diff) = solver.evolve(c.numberSeries)
-    println("%.2f\t%d\t%.2f\t%s".format(
-      diff,
-      algorithm.complexity,
-      algorithm(c.numberSeries, c.numberSeries.size),
-      algorithm))
+    if (c.verbose) {
+      println("%.2f\t%d\t%.2f\t%s".format(
+        diff,
+        algorithm.complexity,
+        algorithm(c.numberSeries, c.numberSeries.size),
+        algorithm))
+    } else {
+      println("%.2f\t%s".format(
+        algorithm(c.numberSeries, c.numberSeries.size),
+        algorithm))
+    }
   }
 }
