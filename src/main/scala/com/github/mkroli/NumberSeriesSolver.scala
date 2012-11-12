@@ -37,7 +37,8 @@ class NumberSeriesSolver(generations: Int = 10000,
   generationSize: Int = 100,
   eliteRatio: Double = 0.01,
   crossoverRatio: Double = 0.16,
-  mutantsRatio: Double = 0.16) {
+  mutantsRatio: Double = 0.16,
+  verbose: Boolean = false) {
   implicit val r = Random
 
   def evolve(numberSeries: Seq[Double], minDiff: Double = 0.0, generationsAfterSolved: Int = 100) = {
@@ -140,7 +141,7 @@ class NumberSeriesSolver(generations: Int = 10000,
       val sortedPopulation = sorted(numberSeries, population).map(_.short)
       val d = diff(numberSeries)(sortedPopulation.head)
 
-      if ((generations - remaining + 1) % 10 == 0)
+      if (verbose && (generations - remaining + 1) % 10 == 0)
         println("Generation %d diff = %.2f %s %d => %s".format(generations - remaining + 1, d, if (d <= minDiff) "(solved)" else "", sortedPopulation.head(numberSeries, numberSeries.size).toInt, sortedPopulation.head))
 
       if (d <= minDiff && generationsAfterSolved <= 1) sortedPopulation

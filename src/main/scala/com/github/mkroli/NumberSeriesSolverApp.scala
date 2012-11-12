@@ -33,7 +33,7 @@ object NumberSeriesSolverApp extends App {
   }
 
   parser.parse(args, Config()).map { c =>
-    val solver = new NumberSeriesSolver
+    val solver = new NumberSeriesSolver(verbose = c.verbose)
     val (algorithm, diff) = solver.evolve(c.numberSeries)
     println("%.2f\t%d\t%.2f\t%s".format(
       diff,
