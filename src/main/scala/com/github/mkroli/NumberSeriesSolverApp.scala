@@ -15,17 +15,30 @@
  */
 package com.github.mkroli
 
+import scopt.immutable.OptionParser
+
+case class Config(numberSeries: List[Double] = Nil,
+  verbose: Boolean = false)
+
 object NumberSeriesSolverApp extends App {
-  if (args.isEmpty) {
-    println("syntax: NumberSeriesSolver <n1> [<n2>, ...]")
-  } else {
+  val parser = new OptionParser[Config]("number-series-solver", "0.1") {
+    def options = Seq(
+      help("h", "help", "Display help message"),
+      flag("v", "verbose", "Will print additional information during computing") { c =>
+        c.copy(verbose = true)
+      },
+      arglist("number...", "The list of numbers which should be processed") { (n, c) =>
+        c.copy(numberSeries = c.numberSeries ::: n.toDouble :: Nil)
+      })
+  }
+
+  parser.parse(args, Config()).map { c =>
     val solver = new NumberSeriesSolver
-    val numberSeries = args.toSeq.map(_.toInt).map(_.toDouble)
-    val (algorithm, diff) = solver.evolve(numberSeries)
+    val (algorithm, diff) = solver.evolve(c.numberSeries)
     println("%.2f\t%d\t%.2f\t%s".format(
       diff,
       algorithm.complexity,
-      algorithm(numberSeries, numberSeries.size),
+      algorithm(c.numberSeries, c.numberSeries.size),
       algorithm))
   }
 }
