@@ -1,3 +1,5 @@
+import AssemblyKeys._
+
 name := "number-series-solver"
 
 organization := "com.github.mkroli"
@@ -9,3 +11,5 @@ scalaVersion := "2.9.2"
 libraryDependencies ++= Seq(
   "com.github.scopt" %% "scopt" % "2.1.0"
 )
+
+assemblySettings
