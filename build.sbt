@@ -13,3 +13,11 @@ libraryDependencies ++= Seq(
 )
 
 assemblySettings
+
+buildInfoSettings
+
+sourceGenerators in Compile <+= buildInfo
+
+buildInfoKeys := Seq[BuildInfoKey](name, version)
+
+buildInfoPackage := "com.github.mkroli"

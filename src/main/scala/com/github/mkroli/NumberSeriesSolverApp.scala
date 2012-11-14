@@ -21,7 +21,7 @@ object NumberSeriesSolverApp extends App {
   case class Config(numberSeries: List[Double] = Nil,
     verbose: Boolean = false)
 
-  val parser = new OptionParser[Config]("number-series-solver", "0.1") {
+  val parser = new OptionParser[Config](BuildInfo.name, BuildInfo.version) {
     def options = Seq(
       help("h", "help", "Display help message"),
       flag("v", "verbose", "Will print additional information during computing") { c =>
