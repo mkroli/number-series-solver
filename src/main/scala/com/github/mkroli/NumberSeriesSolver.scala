@@ -142,7 +142,7 @@ class NumberSeriesSolver(generations: Int = 10000,
       val d = diff(numberSeries)(sortedPopulation.head)
 
       if (verbose && (generations - remaining + 1) % 10 == 0)
-        println("Generation %d diff = %.2f %s %d => %s".format(generations - remaining + 1, d, if (d <= minDiff) "(solved)" else "", sortedPopulation.head(numberSeries, numberSeries.size).toInt, sortedPopulation.head))
+        println("Generation %d diff = %.2f %s %d => f(x) = %s".format(generations - remaining + 1, d, if (d <= minDiff) "(solved)" else "", sortedPopulation.head(numberSeries, numberSeries.size).toInt, sortedPopulation.head))
 
       if (d <= minDiff && generationsAfterSolved <= 1) sortedPopulation
       else {

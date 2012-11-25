@@ -35,5 +35,5 @@ case class IfEven(a: AbstractSyntaxTree, b: AbstractSyntaxTree) extends Abstract
 
   override def copy(a: AbstractSyntaxTree, b: AbstractSyntaxTree) = IfEven(a, b)
 
-  override def toString() = "IfEven(%s, %s)".format(a, b)
+  override def toString() = "if (x %% 2 == 0) %s else %s)".format(a, b)
 }

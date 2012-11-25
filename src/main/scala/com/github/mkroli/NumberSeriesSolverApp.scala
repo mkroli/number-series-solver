@@ -36,13 +36,13 @@ object NumberSeriesSolverApp extends App {
     val solver = new NumberSeriesSolver(verbose = c.verbose)
     val (algorithm, diff) = solver.evolve(c.numberSeries)
     if (c.verbose) {
-      println("%.2f\t%d\t%.2f\t%s".format(
+      println("%.2f\t%d\t%.2f\tf(x) = %s".format(
         diff,
         algorithm.complexity,
         algorithm(c.numberSeries, c.numberSeries.size),
         algorithm))
     } else {
-      println("%.2f\t%s".format(
+      println("%.2f\tf(x) = %s".format(
         algorithm(c.numberSeries, c.numberSeries.size),
         algorithm))
     }

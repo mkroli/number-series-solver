@@ -23,5 +23,5 @@ case class Index() extends AbstractSyntaxTree0 {
 
   override val complexity = 0
 
-  override def toString() = "Index"
+  override def toString() = "x"
 }

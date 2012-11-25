@@ -27,5 +27,5 @@ case class PreviousRecord(offset: Int) extends AbstractSyntaxTree0 {
 
   override val complexity = 1
 
-  override def toString() = "PreviousRecord(%s)".format(offset)
+  override def toString() = "f(x - %s)".format(offset)
 }

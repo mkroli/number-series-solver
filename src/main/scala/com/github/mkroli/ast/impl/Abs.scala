@@ -29,7 +29,7 @@ case class Abs(a: AbstractSyntaxTree) extends AbstractSyntaxTree1 {
     case a => Abs(a)
   }
 
-  override def toString() = "Abs(%s)".format(a)
+  override def toString() = "|%s|".format(a)
 
   override def copy(a: AbstractSyntaxTree) = Abs(a)
 }

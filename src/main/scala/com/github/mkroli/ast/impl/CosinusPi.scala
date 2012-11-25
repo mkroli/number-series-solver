@@ -33,5 +33,5 @@ case class CosinusPi(a: AbstractSyntaxTree) extends AbstractSyntaxTree1 {
 
   override def copy(a: AbstractSyntaxTree) = CosinusPi(a)
 
-  override def toString() = "Cos(Pi * %s)".format(a)
+  override def toString() = "cos(Pi * %s)".format(a)
 }
