@@ -20,6 +20,7 @@ import scala.collection.immutable.Stream.consWrapper
 import scala.math.abs
 import scala.math.pow
 import scala.util.Random
+
 import com.github.mkroli.ast.AbstractSyntaxTree
 import com.github.mkroli.ast.impl.Abs
 import com.github.mkroli.ast.impl.Addition
@@ -30,25 +31,25 @@ import com.github.mkroli.ast.impl.IfEven
 import com.github.mkroli.ast.impl.Index
 import com.github.mkroli.ast.impl.Multiplication
 import com.github.mkroli.ast.impl.PreviousRecord
-import com.github.mkroli.ast.impl.Subtraction
 import com.github.mkroli.ast.impl.Square
+import com.github.mkroli.ast.impl.Subtraction
 
-class NumberSeriesSolver(generations: Int = 10000,
+class NumberSeriesSolver(
   generationSize: Int = 100,
   eliteRatio: Double = 0.01,
   crossoverRatio: Double = 0.16,
   mutantsRatio: Double = 0.16,
-  verbose: Boolean = false) {
+  finished: (Int, Double, AbstractSyntaxTree) => Boolean) {
   implicit val r = Random
 
-  def evolve(numberSeries: Seq[Double], minDiff: Double = 0.0, generationsAfterSolved: Int = 100) = {
-    def diff(s: Seq[Double])(a: AbstractSyntaxTree): Double = {
-      def diffList(s: Seq[Double], a: AbstractSyntaxTree) = {
+  def evolve(numberSeries: Seq[Double]) = {
+    def diff(a: AbstractSyntaxTree): Double = {
+      val diffList = {
         def distance(a: Double, b: Double) = abs(a - b)
 
-        (0 until s.size).map { i =>
+        (0 until numberSeries.size).map { i =>
           try {
-            distance(s(i), a(s, i))
+            distance(numberSeries(i), a(numberSeries, i))
           } catch {
             case t =>
               if (i < 2) 0.0
@@ -56,15 +57,12 @@ class NumberSeriesSolver(generations: Int = 10000,
           }
         }
       }
-
-      def diffFromList(dl: Seq[Double]): Double =
-        if (dl.isEmpty) Double.NaN else dl.sum / dl.size
-
-      diffFromList(diffList(s, a))
+      if (diffList.isEmpty) Double.NaN
+      else diffList.sum / diffList.size
     }
 
-    def randomFunction(s: Seq[Double], depth: Int = 0)(implicit r: Random): AbstractSyntaxTree = {
-      def randomFunc[T](l: List[T])(implicit r: Random): T = {
+    def randomFunction(depth: Int = 0)(implicit r: Random): AbstractSyntaxTree = {
+      def randomFunc[T](l: List[T]): T = {
         val rand = r.nextDouble * l.size
         def func(i: Int, l: List[T]): T = l match {
           case Nil => throw new RuntimeException
@@ -74,8 +72,8 @@ class NumberSeriesSolver(generations: Int = 10000,
         func(0, l)
       }
 
-      lazy val ra = randomFunction(s, depth + 1)
-      lazy val rb = randomFunction(s, depth + 1)
+      lazy val ra = randomFunction(depth + 1)
+      lazy val rb = randomFunction(depth + 1)
       lazy val rsi = r.nextInt(2) + 1
       lazy val rbi = r.nextInt(10).toDouble
       val funcSet = if (depth < 6) {
@@ -97,25 +95,26 @@ class NumberSeriesSolver(generations: Int = 10000,
           (() => Constant(rbi)) ::
           Nil
       }
-      randomFunc(funcSet)(r)()
+      randomFunc(funcSet)()
     }
 
-    def randomStream(numberSeries: Seq[Double]): Stream[AbstractSyntaxTree] =
-      randomFunction(numberSeries) #:: randomStream(numberSeries)
+    def randomStream: Stream[AbstractSyntaxTree] =
+      randomFunction() #:: randomStream
 
-    def sorted(s: Seq[Double], l: Seq[AbstractSyntaxTree]) =
-      l.sortBy(_.complexity).sortBy(diff(s))
+    def sorted(l: Seq[AbstractSyntaxTree]) =
+      l.sortBy(_.complexity).sortBy(diff)
 
-    def randomElement[A](s: Seq[A])(implicit r: Random): A =
-      if (s.size == 1) s(0)
-      else (s(r.nextInt(s.size - 1) + 1))
+    def randomNode(root: AbstractSyntaxTree): AbstractSyntaxTree = {
+      def randomElement[A](s: Seq[A])(implicit r: Random): A =
+        if (s.size == 1) s(0)
+        else (s(r.nextInt(s.size - 1) + 1))
 
-    def randomNode(root: AbstractSyntaxTree): AbstractSyntaxTree =
       randomElement(root.flatten)
+    }
 
-    def mutate(numberSeries: Seq[Double])(a: AbstractSyntaxTree): AbstractSyntaxTree = {
+    def mutate(a: AbstractSyntaxTree): AbstractSyntaxTree = {
       val rn = randomNode(a)
-      a.replaceNode(rn, randomFunction(numberSeries, a.depth(rn)))
+      a.replaceNode(rn, randomFunction(a.depth(rn)))
     }
 
     def crossover(parents: (AbstractSyntaxTree, AbstractSyntaxTree)): (AbstractSyntaxTree, AbstractSyntaxTree) = {
@@ -137,14 +136,16 @@ class NumberSeriesSolver(generations: Int = 10000,
     }
 
     @tailrec
-    def evolve(numberSeries: Seq[Double], remaining: Int, population: Seq[AbstractSyntaxTree], generationsAfterSolved: Int): Seq[AbstractSyntaxTree] = {
-      val sortedPopulation = sorted(numberSeries, population).map(_.short)
-      val d = diff(numberSeries)(sortedPopulation.head)
+    def evolve(population: Seq[AbstractSyntaxTree], generation: Int): Seq[AbstractSyntaxTree] = {
+      val sortedPopulation = sorted(population).map(_.short)
+      val d = diff(sortedPopulation.head)
 
-      if (verbose && (generations - remaining + 1) % 10 == 0)
-        println("Generation %d diff = %.2f %s %d => f(x) = %s".format(generations - remaining + 1, d, if (d <= minDiff) "(solved)" else "", sortedPopulation.head(numberSeries, numberSeries.size).toInt, sortedPopulation.head))
+      val done = finished(
+        generation,
+        d,
+        sortedPopulation.head)
 
-      if (d <= minDiff && generationsAfterSolved <= 1) sortedPopulation
+      if (done) sortedPopulation.map(_.short)
       else {
         val elite = sortedPopulation.take((generationSize * eliteRatio).toInt)
         val pairs = randomElementTuples(sortedPopulation, 2, (generationSize / 2 * crossoverRatio).toInt * 2).flatMap {
@@ -153,24 +154,18 @@ class NumberSeriesSolver(generations: Int = 10000,
             pa :: pb :: Nil
           case _ => Nil
         }
-        val mutants = randomElementTuples(sortedPopulation, 1, (generationSize * mutantsRatio).toInt).flatten.map(mutate(numberSeries))
-        val newRandomPopulation = sorted(numberSeries, randomStream(numberSeries).take(generationSize - elite.size - pairs.size - mutants.size))
+        val mutants = randomElementTuples(sortedPopulation, 1, (generationSize * mutantsRatio).toInt).flatten.map(mutate)
+        val newRandomPopulation = sorted(randomStream.take(generationSize - elite.size - pairs.size - mutants.size))
         val newPopulation = elite ++ pairs ++ mutants ++ newRandomPopulation
 
-        if (remaining == 1)
-          sorted(numberSeries, newPopulation).map(_.short)
-        else if (d > minDiff)
-          evolve(numberSeries, remaining - 1, newPopulation, generationsAfterSolved)
-        else
-          evolve(numberSeries, remaining - 1, newPopulation, generationsAfterSolved - 1)
+        evolve(newPopulation, generation + 1)
       }
     }
 
-    val algorithm = evolve(numberSeries,
-      generations,
-      randomStream(numberSeries).take(generationSize),
-      generationsAfterSolved).head
-    val d = diff(numberSeries)(algorithm)
+    val algorithm = evolve(
+      randomStream.take(generationSize),
+      0).head
+    val d = diff(algorithm)
 
     (algorithm, d)
   }
