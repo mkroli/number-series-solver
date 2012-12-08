@@ -16,7 +16,6 @@
 package com.github.mkroli
 
 import scala.annotation.tailrec
-import scala.collection.immutable.Stream.consWrapper
 import scala.math.abs
 import scala.math.pow
 import scala.util.Random
@@ -99,8 +98,11 @@ class NumberSeriesSolver(
       randomFunc(funcSet)()
     }
 
-    def randomStream: Stream[AbstractSyntaxTree] =
-      randomFunction() #:: randomStream
+    @tailrec
+    def randomFunctions(n: Int, functions: List[AbstractSyntaxTree] = Nil): List[AbstractSyntaxTree] = {
+      if (n > 0) randomFunctions(n - 1, randomFunction() :: functions)
+      else functions
+    }
 
     def sorted(l: Seq[AbstractSyntaxTree]) =
       l.sortBy(_.complexity).sortBy(diff)
@@ -132,13 +134,20 @@ class NumberSeriesSolver(
     def randomElementTuples[A](s: Seq[A], tupleSize: Int, num: Int)(implicit r: Random): Seq[Seq[A]] = {
       def randomIndex = (pow(r.nextDouble, 2) * s.size).toInt
 
-      def randomIndexStream: Stream[Int] = randomIndex #:: randomIndexStream
+      @tailrec
+      def randomIndizes(n: Int, indizes: List[Int] = Nil): List[Int] = {
+        if (n > 0) randomIndizes(n - 1, randomIndex :: indizes)
+        else indizes
+      }
 
-      def randomDistinctTupleStream: Stream[Seq[A]] =
-        randomIndexStream.take(tupleSize).toList.sorted.map(i => s(i)) #::
-          randomDistinctTupleStream
+      @tailrec
+      def randomDistinctTuples(n: Int, tuples: List[List[A]] = Nil): List[List[A]] = {
+        if (n > 0) randomDistinctTuples(n - 1,
+          randomIndizes(tupleSize).sorted.map(i => s(i)) :: tuples)
+        else tuples
+      }
 
-      randomDistinctTupleStream.take(num).toList
+      randomDistinctTuples(num)
     }
 
     @tailrec
@@ -161,7 +170,7 @@ class NumberSeriesSolver(
           case _ => Nil
         }
         val mutants = randomElementTuples(sortedPopulation, 1, (generationSize * mutantsRatio).toInt).flatten.map(mutate)
-        val newRandomPopulation = sorted(randomStream.take(generationSize - elite.size - pairs.size - mutants.size))
+        val newRandomPopulation = sorted(randomFunctions(generationSize - elite.size - pairs.size - mutants.size))
         val newPopulation = elite ++ pairs ++ mutants ++ newRandomPopulation
 
         evolve(newPopulation, generation + 1)
@@ -169,7 +178,7 @@ class NumberSeriesSolver(
     }
 
     val algorithm = evolve(
-      randomStream.take(generationSize),
+      randomFunctions(generationSize),
       0).head
     val d = diff(algorithm)
 
