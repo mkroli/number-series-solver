@@ -35,6 +35,7 @@ import com.github.mkroli.ast.impl.Square
 import com.github.mkroli.ast.impl.Subtraction
 
 class NumberSeriesSolver(
+  maxAbstractSyntaxTreeHeight: Int = 8,
   generationSize: Int = 100,
   eliteRatio: Double = 0.01,
   crossoverRatio: Double = 0.16,
@@ -76,7 +77,7 @@ class NumberSeriesSolver(
       lazy val rb = randomFunction(depth + 1)
       lazy val rsi = r.nextInt(2) + 1
       lazy val rbi = r.nextInt(10).toDouble
-      val funcSet = if (depth < 6) {
+      val funcSet = if (depth < maxAbstractSyntaxTreeHeight) {
         (() => Addition(ra, rb)) ::
           (() => Subtraction(ra, rb)) ::
           (() => Multiplication(ra, rb)) ::
@@ -104,22 +105,27 @@ class NumberSeriesSolver(
     def sorted(l: Seq[AbstractSyntaxTree]) =
       l.sortBy(_.complexity).sortBy(diff)
 
-    def randomNode(root: AbstractSyntaxTree): AbstractSyntaxTree = {
+    def randomNode(root: AbstractSyntaxTree, maxHeight: Int): AbstractSyntaxTree = {
       def randomElement[A](s: Seq[A])(implicit r: Random): A =
         if (s.size == 1) s(0)
         else (s(r.nextInt(s.size - 1) + 1))
 
-      randomElement(root.flatten)
+      randomElement(root.flatten.filter {
+        case ast =>
+          maxHeight == maxAbstractSyntaxTreeHeight ||
+            ast.height <= maxHeight
+      })
     }
 
     def mutate(a: AbstractSyntaxTree): AbstractSyntaxTree = {
-      val rn = randomNode(a)
+      val rn = randomNode(a, maxAbstractSyntaxTreeHeight)
       a.replaceNode(rn, randomFunction(a.depth(rn)))
     }
 
     def crossover(parents: (AbstractSyntaxTree, AbstractSyntaxTree)): (AbstractSyntaxTree, AbstractSyntaxTree) = {
       val (pa, pb) = parents
-      val (rna, rnb) = (randomNode(pa), randomNode(pb))
+      val rna = randomNode(pa, maxAbstractSyntaxTreeHeight - 1)
+      val rnb = randomNode(pb, maxAbstractSyntaxTreeHeight - rna.height)
       (pa.replaceNode(rna, rnb), pb.replaceNode(rnb, rna))
     }
 

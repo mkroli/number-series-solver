@@ -15,12 +15,16 @@
  */
 package com.github.mkroli.ast
 
+import math.max
+
 trait AbstractSyntaxTree extends Function[(Seq[Double], Int), Double] {
   def short: AbstractSyntaxTree = this
 
   val complexity: Int
 
   val nodes: Int
+
+  val height: Int
 
   def children: Seq[AbstractSyntaxTree]
 
@@ -33,6 +37,8 @@ trait AbstractSyntaxTree extends Function[(Seq[Double], Int), Double] {
 
 trait AbstractSyntaxTree0 extends AbstractSyntaxTree {
   override val nodes = 1
+
+  override val height = 1
 
   override def children = Nil
 
@@ -55,6 +61,8 @@ trait AbstractSyntaxTree1 extends AbstractSyntaxTree {
   override val complexity = selfComplexity + a.complexity
 
   override val nodes = 1 + a.nodes
+
+  override val height = 1 + a.height
 
   override def children = a :: Nil
 
@@ -80,6 +88,8 @@ trait AbstractSyntaxTree2 extends AbstractSyntaxTree {
   override val complexity = selfComplexity + a.complexity + b.complexity
 
   override val nodes = 1 + a.nodes + b.nodes
+
+  override val height = 1 + max(a.height, b.height)
 
   override def children = a :: b :: Nil
 
