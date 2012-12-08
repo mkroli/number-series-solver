@@ -19,7 +19,6 @@ import scala.annotation.tailrec
 import scala.math.abs
 import scala.math.pow
 import scala.util.Random
-
 import com.github.mkroli.ast.AbstractSyntaxTree
 import com.github.mkroli.ast.impl.Abs
 import com.github.mkroli.ast.impl.Addition
@@ -32,10 +31,12 @@ import com.github.mkroli.ast.impl.Multiplication
 import com.github.mkroli.ast.impl.PreviousRecord
 import com.github.mkroli.ast.impl.Square
 import com.github.mkroli.ast.impl.Subtraction
+import scala.collection.parallel.ParSeq
+import scala.collection.GenSeq
 
 class NumberSeriesSolver(
   maxAbstractSyntaxTreeHeight: Int = 8,
-  generationSize: Int = 100,
+  generationSize: Int = 1000,
   eliteRatio: Double = 0.01,
   crossoverRatio: Double = 0.16,
   mutantsRatio: Double = 0.16,
@@ -98,14 +99,20 @@ class NumberSeriesSolver(
       randomFunc(funcSet)()
     }
 
-    @tailrec
-    def randomFunctions(n: Int, functions: List[AbstractSyntaxTree] = Nil): List[AbstractSyntaxTree] = {
-      if (n > 0) randomFunctions(n - 1, randomFunction() :: functions)
-      else functions
-    }
+    def randomFunctions(n: Int): ParSeq[AbstractSyntaxTree] =
+      (0 until n).par.map(i => randomFunction())
 
-    def sorted(l: Seq[AbstractSyntaxTree]) =
-      l.sortBy(_.complexity).sortBy(diff)
+    def sorted(l: ParSeq[AbstractSyntaxTree]) = {
+      l.map { a =>
+        a -> diff(a)
+      }.seq.sortBy {
+        case (a, _) => a.complexity
+      }.sortBy {
+        case (_, diff) => diff
+      }.par.map {
+        case (a, _) => a
+      }
+    }
 
     def randomNode(root: AbstractSyntaxTree, maxHeight: Int): AbstractSyntaxTree = {
       def randomElement[A](s: Seq[A])(implicit r: Random): A =
@@ -131,28 +138,21 @@ class NumberSeriesSolver(
       (pa.replaceNode(rna, rnb), pb.replaceNode(rnb, rna))
     }
 
-    def randomElementTuples[A](s: Seq[A], tupleSize: Int, num: Int)(implicit r: Random): Seq[Seq[A]] = {
+    def randomElementTuples[A](s: ParSeq[A], tupleSize: Int, num: Int)(implicit r: Random) = {
       def randomIndex = (pow(r.nextDouble, 2) * s.size).toInt
 
-      @tailrec
-      def randomIndizes(n: Int, indizes: List[Int] = Nil): List[Int] = {
-        if (n > 0) randomIndizes(n - 1, randomIndex :: indizes)
-        else indizes
-      }
+      def randomIndizes(n: Int) =
+        (0 until n).par.map(i => randomIndex).seq
 
-      @tailrec
-      def randomDistinctTuples(n: Int, tuples: List[List[A]] = Nil): List[List[A]] = {
-        if (n > 0) randomDistinctTuples(n - 1,
-          randomIndizes(tupleSize).sorted.map(i => s(i)) :: tuples)
-        else tuples
-      }
+      def randomDistinctTuples(n: Int) =
+        (0 until n).par.map(i => randomIndizes(tupleSize).map(k => s(k)))
 
       randomDistinctTuples(num)
     }
 
     @tailrec
-    def evolve(population: Seq[AbstractSyntaxTree], generation: Int): Seq[AbstractSyntaxTree] = {
-      val sortedPopulation = sorted(population).map(_.short)
+    def evolve(population: GenSeq[AbstractSyntaxTree], generation: Int): Seq[AbstractSyntaxTree] = {
+      val sortedPopulation = sorted(population.par).map(_.short)
       val d = diff(sortedPopulation.head)
 
       val done = finished(
@@ -160,7 +160,7 @@ class NumberSeriesSolver(
         d,
         sortedPopulation.head)
 
-      if (done) sortedPopulation.map(_.short)
+      if (done) sortedPopulation.map(_.short).seq
       else {
         val elite = sortedPopulation.take((generationSize * eliteRatio).toInt)
         val pairs = randomElementTuples(sortedPopulation, 2, (generationSize / 2 * crossoverRatio).toInt * 2).flatMap {
