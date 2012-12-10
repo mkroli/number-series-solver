@@ -5,6 +5,7 @@ import scala.swing.BorderPanel.Position.Center
 import scala.swing.BorderPanel.Position.North
 import scala.swing.BoxPanel
 import scala.swing.Button
+import scala.swing.Dialog
 import scala.swing.Dialog.Message.Error
 import scala.swing.Label
 import scala.swing.MainFrame
@@ -13,10 +14,11 @@ import scala.swing.ScrollPane
 import scala.swing.SimpleSwingApplication
 import scala.swing.Table
 import scala.swing.TextField
+import scala.swing.event.ButtonClicked
+import scala.swing.event.EditDone
+
 import javax.swing.UIManager
 import javax.swing.table.DefaultTableModel
-import scala.swing.event.ButtonClicked
-import scala.swing.Dialog
 
 object NumberSeriesSolverWindow extends SimpleSwingApplication {
   try {
@@ -35,6 +37,7 @@ object NumberSeriesSolverWindow extends SimpleSwingApplication {
   evolutionTableModel.addColumn("Algorithm")
 
   val numbersTextField = new TextField
+  numbersTextField.subscribe(this.reactions)
 
   val solveButton = new Button("Solve")
   solveButton.subscribe(this.reactions)
@@ -57,44 +60,47 @@ object NumberSeriesSolverWindow extends SimpleSwingApplication {
     }
   }
 
-  reactions += {
-    case ButtonClicked(btn) if btn == solveButton => {
-      val numberSeries = try {
-        numbersTextField.text.split("""\s+""").toSeq.map(s => s.toDouble)
-      } catch {
-        case t => Nil
-      }
-
-      if (numberSeries.size < 2) {
-        Dialog.showMessage(
-          tableScrollPane,
-          """You need to enter at least two numbers separated by " """",
-          "Error",
-          Error)
-      } else {
-        solveButton.enabled = false
-        (1 to evolutionTableModel.getRowCount())
-          .foreach(_ => evolutionTableModel.removeRow(0))
-        val solver = new NumberSeriesSolver(finished = { (generation, diff, algorithm) =>
-          evolutionTableModel.addRow(Array(
-            generation.toString,
-            diff.toString,
-            if (diff == 0.0) "Yes" else "No",
-            algorithm(numberSeries, numberSeries.size).toString,
-            algorithm))
-
-          tableScrollPane.verticalScrollBar.value =
-            tableScrollPane.verticalScrollBar.maximum
-
-          generation >= 1000 || diff == 0.0
-        })
-        new Thread() {
-          override def run() = {
-            solver.evolve(numberSeries)
-            solveButton.enabled = true
-          }
-        }.start
-      }
+  def solve {
+    val numberSeries = try {
+      numbersTextField.text.split("""\s+""").toSeq.map(s => s.toDouble)
+    } catch {
+      case t => Nil
     }
+
+    if (numberSeries.size < 2) {
+      Dialog.showMessage(
+        tableScrollPane,
+        """You need to enter at least two numbers separated by " """",
+        "Error",
+        Error)
+    } else {
+      solveButton.enabled = false
+      (1 to evolutionTableModel.getRowCount())
+        .foreach(_ => evolutionTableModel.removeRow(0))
+      val solver = new NumberSeriesSolver(finished = { (generation, diff, algorithm) =>
+        evolutionTableModel.addRow(Array(
+          generation.toString,
+          diff.toString,
+          if (diff == 0.0) "Yes" else "No",
+          algorithm(numberSeries, numberSeries.size).toString,
+          algorithm))
+
+        tableScrollPane.verticalScrollBar.value =
+          tableScrollPane.verticalScrollBar.maximum
+
+        generation >= 1000 || diff == 0.0
+      })
+      new Thread() {
+        override def run() = {
+          solver.evolve(numberSeries)
+          solveButton.enabled = true
+        }
+      }.start
+    }
+  }
+
+  reactions += {
+    case ButtonClicked(btn) if btn == solveButton => solve
+    case EditDone(textField) if textField == numbersTextField => solve
   }
 }
