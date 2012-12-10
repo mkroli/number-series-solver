@@ -5,7 +5,6 @@ import scala.swing.BorderPanel.Position.Center
 import scala.swing.BorderPanel.Position.North
 import scala.swing.BoxPanel
 import scala.swing.Button
-import scala.swing.Dialog
 import scala.swing.Dialog.Message.Error
 import scala.swing.Label
 import scala.swing.MainFrame
@@ -14,11 +13,18 @@ import scala.swing.ScrollPane
 import scala.swing.SimpleSwingApplication
 import scala.swing.Table
 import scala.swing.TextField
-import scala.swing.event.ButtonClicked
-
+import javax.swing.UIManager
 import javax.swing.table.DefaultTableModel
+import scala.swing.event.ButtonClicked
+import scala.swing.Dialog
 
 object NumberSeriesSolverWindow extends SimpleSwingApplication {
+  try {
+    UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel")
+  } catch {
+    case _ => UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName())
+  }
+
   val evolutionTableModel = new DefaultTableModel {
     override def isCellEditable(x: Int, y: Int) = false
   }
