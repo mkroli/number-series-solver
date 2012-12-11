@@ -15,7 +15,8 @@ import scala.swing.SimpleSwingApplication
 import scala.swing.Table
 import scala.swing.TextField
 import scala.swing.event.ButtonClicked
-import scala.swing.event.EditDone
+import scala.swing.event.Key
+import scala.swing.event.KeyPressed
 
 import javax.swing.UIManager
 import javax.swing.table.DefaultTableModel
@@ -37,10 +38,10 @@ object NumberSeriesSolverWindow extends SimpleSwingApplication {
   evolutionTableModel.addColumn("Algorithm")
 
   val numbersTextField = new TextField
-  numbersTextField.subscribe(this.reactions)
+  listenTo(numbersTextField.keys)
 
   val solveButton = new Button("Solve")
-  solveButton.subscribe(this.reactions)
+  listenTo(solveButton)
 
   val tableScrollPane = new ScrollPane(new Table {
     model = evolutionTableModel
@@ -101,6 +102,6 @@ object NumberSeriesSolverWindow extends SimpleSwingApplication {
 
   reactions += {
     case ButtonClicked(btn) if btn == solveButton => solve
-    case EditDone(textField) if textField == numbersTextField => solve
+    case KeyPressed(fld, Key.Enter, _, _) if fld == numbersTextField => solve
   }
 }
