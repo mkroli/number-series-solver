@@ -17,7 +17,6 @@ import scala.swing.TextField
 import scala.swing.event.ButtonClicked
 import scala.swing.event.Key
 import scala.swing.event.KeyPressed
-
 import javax.swing.UIManager
 import javax.swing.table.DefaultTableModel
 
@@ -36,6 +35,7 @@ object NumberSeriesSolverWindow extends SimpleSwingApplication {
   evolutionTableModel.addColumn("Solution")
   evolutionTableModel.addColumn("Next Number")
   evolutionTableModel.addColumn("Algorithm")
+  var solving = false
 
   val numbersTextField = new TextField
   listenTo(numbersTextField.keys)
@@ -75,28 +75,45 @@ object NumberSeriesSolverWindow extends SimpleSwingApplication {
         "Error",
         Error)
     } else {
-      solveButton.enabled = false
-      (1 to evolutionTableModel.getRowCount())
-        .foreach(_ => evolutionTableModel.removeRow(0))
-      val solver = new NumberSeriesSolver(finished = { (generation, diff, algorithm) =>
-        evolutionTableModel.addRow(Array(
-          generation.toString,
-          diff.toString,
-          if (diff == 0.0) "Yes" else "No",
-          algorithm(numberSeries, numberSeries.size).toString,
-          algorithm))
+      def startSolving() {
+        solving = true
+        solveButton.text = "Cancel"
+      }
+      def stopSolving() {
+        solving = false
+        solveButton.text = "Solve"
+      }
 
-        tableScrollPane.verticalScrollBar.value =
-          tableScrollPane.verticalScrollBar.maximum
+      if (solving) {
+        stopSolving()
+      } else {
+        startSolving()
+        (1 to evolutionTableModel.getRowCount())
+          .foreach(_ => evolutionTableModel.removeRow(0))
+        val solver = new NumberSeriesSolver(finished = { (generation, diff, algorithm) =>
+          evolutionTableModel.addRow(Array(
+            generation.toString,
+            diff.toString,
+            if (diff == 0.0) "Yes" else "No",
+            algorithm(numberSeries, numberSeries.size).toString,
+            algorithm))
 
-        generation >= 1000 || diff == 0.0
-      })
-      new Thread() {
-        override def run() = {
-          solver.evolve(numberSeries)
-          solveButton.enabled = true
+          tableScrollPane.verticalScrollBar.value =
+            tableScrollPane.verticalScrollBar.maximum
+
+          if (diff == 0.0) {
+            stopSolving()
+          }
+          !solving
+        })
+        val thread = new Thread("Solver") {
+          override def run() = {
+            solver.evolve(numberSeries)
+          }
         }
-      }.start
+        thread.setDaemon(true)
+        thread.start
+      }
     }
   }
 
