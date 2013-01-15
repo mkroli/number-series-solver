@@ -52,9 +52,8 @@ class NumberSeriesSolver(
           try {
             distance(numberSeries(i), a(numberSeries, i))
           } catch {
-            case t =>
-              if (i < 2) 0.0
-              else (i.toDouble - 1.0)
+            case _: Throwable if i < 2 => 0.0
+            case _: Throwable => i.toDouble - 1.0
           }
         }
       }

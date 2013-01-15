@@ -19,8 +19,6 @@ import com.github.mkroli.ast.AbstractSyntaxTree
 import com.github.mkroli.ast.AbstractSyntaxTree2
 
 case class Division(a: AbstractSyntaxTree, b: AbstractSyntaxTree) extends AbstractSyntaxTree2 {
-  require(b != 0)
-
   def apply(p: (Seq[Double], Int)) = a(p) / b(p)
 
   override def short = (a.short, b.short) match {

@@ -39,7 +39,7 @@ object NumberSeriesSolverWindow extends SimpleSwingApplication {
   try {
     UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel")
   } catch {
-    case _ => UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName())
+    case _: Throwable => UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName())
   }
 
   val evolutionTableModel = new DefaultTableModel {
@@ -80,7 +80,7 @@ object NumberSeriesSolverWindow extends SimpleSwingApplication {
     val numberSeries = try {
       numbersTextField.text.split("""\s+""").toSeq.map(s => s.toDouble)
     } catch {
-      case t => Nil
+      case _: Throwable => Nil
     }
 
     if (numberSeries.size < 2) {
