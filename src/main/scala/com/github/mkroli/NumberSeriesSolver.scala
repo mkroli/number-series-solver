@@ -32,7 +32,7 @@ import com.github.mkroli.ast.impl.PreviousRecord
 import com.github.mkroli.ast.impl.Square
 import com.github.mkroli.ast.impl.Subtraction
 import scala.collection.parallel.ParSeq
-import scala.collection.GenSeq
+import scala.collection.parallel.CollectionConverters._
 
 class NumberSeriesSolver(
   maxAbstractSyntaxTreeHeight: Int = 8,
@@ -150,7 +150,7 @@ class NumberSeriesSolver(
     }
 
     @tailrec
-    def evolve(population: GenSeq[AbstractSyntaxTree], generation: Int): Seq[AbstractSyntaxTree] = {
+    def evolve(population: ParSeq[AbstractSyntaxTree], generation: Int): Seq[AbstractSyntaxTree] = {
       val sortedPopulation = sorted(population.par).map(_.short)
       val d = diff(sortedPopulation.head)
 
@@ -159,7 +159,7 @@ class NumberSeriesSolver(
         d,
         sortedPopulation.head)
 
-      if (done) sortedPopulation.map(_.short).seq
+      if (done) sortedPopulation.map(_.short).to(Seq)
       else {
         val elite = sortedPopulation.take((generationSize * eliteRatio).toInt)
         val pairs = randomElementTuples(sortedPopulation, 2, (generationSize / 2 * crossoverRatio).toInt * 2).flatMap {

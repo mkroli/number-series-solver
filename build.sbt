@@ -3,13 +3,14 @@ import sbtrelease.ReleasePlugin.autoImport.ReleaseTransformations._
 lazy val projectSettings = Seq(
   name := "number-series-solver",
   organization := "com.github.mkroli",
-  scalaVersion := "2.10.2"
+  scalaVersion := "2.13.1"
 )
 
 lazy val projectDependencies = Seq(
   libraryDependencies ++= Seq(
-    "org.scala-lang" % "scala-swing" % "2.10.2",
-    "com.github.scopt" %% "scopt" % "2.1.0"
+    "org.scala-lang.modules" %% "scala-parallel-collections" % "0.2.0",
+    "org.scala-lang.modules" %% "scala-swing" % "2.1.1",
+    "com.github.scopt" %% "scopt" % "4.0.0-RC2"
   )
 )
 

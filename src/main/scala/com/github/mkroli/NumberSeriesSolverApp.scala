@@ -15,24 +15,30 @@
  */
 package com.github.mkroli
 
-import scopt.immutable.OptionParser
+import scopt.OParser
 
 object NumberSeriesSolverApp extends App {
   case class Config(numberSeries: List[Double] = Nil,
     verbose: Boolean = false)
 
-  val parser = new OptionParser[Config](BuildInfo.name, BuildInfo.version) {
-    def options = Seq(
-      help("h", "help", "Display help message"),
-      flag("v", "verbose", "Will print additional information during computing") { c =>
-        c.copy(verbose = true)
-      },
-      arglist("number...", "The list of numbers which should be processed") { (n, c) =>
-        c.copy(numberSeries = c.numberSeries ::: n.toDouble :: Nil)
-      })
+  val parserBuilder = OParser.builder[Config]
+  val parser = {
+    import parserBuilder._
+    OParser.sequence(
+      programName(BuildInfo.name),
+      head(BuildInfo.name, BuildInfo.version),
+      help('c', "help").text("Display help message"),
+      opt[Unit]('v', "verbose")
+        .text("Will print additional information during computing")
+        .action((_, c) => c.copy(verbose = true)),
+      arg[Double]("number...")
+        .text("The list of numbers which should be processed")
+        .unbounded()
+        .action((n, c) => c.copy(numberSeries = c.numberSeries :+ n))
+    )
   }
 
-  parser.parse(args, Config()).map { c =>
+  OParser.parse(parser, args, Config()).foreach { c =>
     val solver = new NumberSeriesSolver(finished = { (generation, error, algorithm) =>
       if (c.verbose) {
         println("Generation %d diff = %.2f%s %d => f(x) = %s".format(
