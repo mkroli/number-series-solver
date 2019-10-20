@@ -20,10 +20,14 @@ lazy val projectBuildInfoSettings = Seq(
 )
 
 lazy val projectAssemblySettings = Seq(
+  assemblyJarName in assembly := s"${name.value}-${version.value}.jar",
   mainClass in assembly := Some("com.github.mkroli.NumberSeriesSolverWindow")
 )
 
 lazy val projectReleaseSettings = Seq(
+  ghreleaseRepoOrg := "mkroli",
+  ghreleaseAssets := Seq(assembly.value),
+  ghreleaseNotes := (_ => ""),
   releaseProcess := Seq[ReleaseStep](
     checkSnapshotDependencies,
     inquireVersions,
@@ -32,8 +36,11 @@ lazy val projectReleaseSettings = Seq(
     setReleaseVersion,
     commitReleaseVersion,
     tagRelease,
+    pushChanges,
+    releaseStepInputTask(githubRelease),
     setNextVersion,
-    commitNextVersion
+    commitNextVersion,
+    pushChanges
   )
 )
 
@@ -43,3 +50,4 @@ lazy val root = (project in file("."))
   .settings(projectDependencies)
   .settings(projectBuildInfoSettings)
   .settings(projectAssemblySettings)
+  .settings(projectReleaseSettings)
