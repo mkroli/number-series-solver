@@ -4,7 +4,7 @@ type: docker
 name: default
 
 steps:
-  - name: "Scala 2.13.0 (code coverage)"
+  - name: "Scala 2.10.2"
     image: hseeberger/scala-sbt:11.0.4_1.3.2_2.13.1
     user: sbtuser
     commands:
