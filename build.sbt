@@ -51,3 +51,6 @@ lazy val root = (project in file("."))
   .settings(projectBuildInfoSettings)
   .settings(projectAssemblySettings)
   .settings(projectReleaseSettings)
+  .settings(
+    Compile / internationalisationVerifyLocales += "de"
+  )

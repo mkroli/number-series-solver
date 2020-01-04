@@ -6,4 +6,8 @@ addSbtPlugin("com.github.gseitz" % "sbt-release" % "1.0.12")
 
 addSbtPlugin("ohnosequences" % "sbt-github-release" % "0.7.0")
 
+resolvers += Resolver.bintrayIvyRepo("mkroli", "sbt-plugins")
+
+addSbtPlugin("com.github.mkroli" % "sbt-i18n" % "0.2")
+
 libraryDependencies += "javax.activation" % "activation" % "1.1.1"

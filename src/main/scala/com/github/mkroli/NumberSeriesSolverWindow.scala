@@ -15,25 +15,13 @@
  */
 package com.github.mkroli
 
-import scala.swing.BorderPanel
-import scala.swing.BorderPanel.Position.Center
-import scala.swing.BorderPanel.Position.North
-import scala.swing.BoxPanel
-import scala.swing.Button
-import scala.swing.Dialog
-import scala.swing.Dialog.Message.Error
-import scala.swing.Label
-import scala.swing.MainFrame
-import scala.swing.Orientation
-import scala.swing.ScrollPane
-import scala.swing.SimpleSwingApplication
-import scala.swing.Table
-import scala.swing.TextField
-import scala.swing.event.ButtonClicked
-import scala.swing.event.Key
-import scala.swing.event.KeyPressed
 import javax.swing.UIManager
 import javax.swing.table.DefaultTableModel
+
+import scala.swing.BorderPanel.Position.{Center, North}
+import scala.swing.Dialog.Message.Error
+import scala.swing.event.{ButtonClicked, Key, KeyPressed}
+import scala.swing.{BorderPanel, BoxPanel, Button, Dialog, Label, MainFrame, Orientation, ScrollPane, SimpleSwingApplication, Table, TextField}
 
 object NumberSeriesSolverWindow extends SimpleSwingApplication {
   try {
@@ -45,17 +33,17 @@ object NumberSeriesSolverWindow extends SimpleSwingApplication {
   val evolutionTableModel = new DefaultTableModel {
     override def isCellEditable(x: Int, y: Int) = false
   }
-  evolutionTableModel.addColumn("Generation")
-  evolutionTableModel.addColumn("Error")
-  evolutionTableModel.addColumn("Solution")
-  evolutionTableModel.addColumn("Next Number")
-  evolutionTableModel.addColumn("Algorithm")
+  evolutionTableModel.addColumn(NumberSeriesSolverLabels.generation)
+  evolutionTableModel.addColumn(NumberSeriesSolverLabels.error)
+  evolutionTableModel.addColumn(NumberSeriesSolverLabels.solution)
+  evolutionTableModel.addColumn(NumberSeriesSolverLabels.next_number)
+  evolutionTableModel.addColumn(NumberSeriesSolverLabels.algorithm)
   var solving = false
 
   val numbersTextField = new TextField
   listenTo(numbersTextField.keys)
 
-  val solveButton = new Button("Solve")
+  val solveButton = new Button(NumberSeriesSolverLabels.solve)
   listenTo(solveButton)
 
   val tableScrollPane = new ScrollPane(new Table {
@@ -69,7 +57,7 @@ object NumberSeriesSolverWindow extends SimpleSwingApplication {
       layout(tableScrollPane) = Center
 
       layout(new BoxPanel(Orientation.Horizontal) {
-        contents += new Label("Numbers:")
+        contents += new Label(NumberSeriesSolverLabels.numbers)
         contents += numbersTextField
         contents += solveButton
       }) = North
@@ -86,17 +74,18 @@ object NumberSeriesSolverWindow extends SimpleSwingApplication {
     if (numberSeries.size < 2) {
       Dialog.showMessage(
         tableScrollPane,
-        """You need to enter at least two numbers separated by " """",
-        "Error",
+        NumberSeriesSolverLabels.too_few_numbers,
+        NumberSeriesSolverLabels.error,
         Error)
     } else {
       def startSolving() {
         solving = true
-        solveButton.text = "Cancel"
+        solveButton.text = NumberSeriesSolverLabels.cancel
       }
+
       def stopSolving() {
         solving = false
-        solveButton.text = "Solve"
+        solveButton.text = NumberSeriesSolverLabels.solve
       }
 
       if (solving) {
@@ -109,7 +98,7 @@ object NumberSeriesSolverWindow extends SimpleSwingApplication {
           evolutionTableModel.addRow(Array(
             generation.toString,
             diff.toString,
-            if (diff == 0.0) "Yes" else "No",
+            if (diff == 0.0) NumberSeriesSolverLabels.yes else NumberSeriesSolverLabels.no,
             algorithm(numberSeries, numberSeries.size).toString,
             algorithm))
 
